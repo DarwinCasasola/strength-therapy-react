@@ -1,18 +1,16 @@
-/* src/index.css */
-:root {
-  --bg: #0b2e13;       /* dark green */
-  --text: #f5efe6;     /* cream */
-  --accent: #d32f2f;   /* red CTA */
+:root{
+  --bg:#101214;          /* page */
+  --paper:#1A1D21;       /* cards */
+  --text:#EAEAEA;        /* text */
+  --accent:#d32f2f;      /* red */
+}
+body{ background:var(--bg); color:var(--text); }
+.card{
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.10);
+  border-radius:1rem;
 }
 
-* { box-sizing: border-box; }
-html, body, #root { height: 100%; }
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial;
-  background: var(--bg);
-  color: var(--text);
-}
 
 a { color: inherit; text-decoration: none; }
 .container { max-width: 1000px; margin: 0 auto; padding: 1rem; }

@@ -1,6 +1,18 @@
 [
-    { "title": "1:1 Coaching", "description": "Work one-on-one with a certified trainer to build strength, improve form, and achieve your fitness goals efficiently and safely.", "price": 89 },
-    { "title": "Mobility Session", "description": "Access cutting-edge recovery tools including foam rollers, massage guns, and guided stretches to support injury prevention.", "price": 59 },
-    { "title": "Online Coaching", "description": "Stay on track from anywhere with remote training plans, check-ins, and live video sessions tailored to your routine", "price": 39 }
+    {
+      "title": "Personal Training",
+      "description": "Work one-on-one with a certified trainer to build strength, improve form, and achieve your fitness goals efficiently and safely.",
+      "image": "/assets/personal-training.jpg"
+    },
+    {
+      "title": "Recovery Zone",
+      "description": "Access cutting-edge recovery tools including foam rollers, massage guns, and guided stretches to support injury prevention.",
+      "image": "/assets/recovery-tools.jpg"
+    },
+    {
+      "title": "Online Coaching",
+      "description": "Stay on track from anywhere with remote training plans, check-ins, and live video sessions tailored to your routine.",
+      "image": "/assets/online-coaching.jpg"
+    }
   ]
   

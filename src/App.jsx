@@ -50,7 +50,7 @@ export default function App() {
       <CssBaseline />
       <BookingProvider>
         <Navbar />
-        <Container sx={{ py: 3 }}>
+        <Container maxWidth='xl' sx={{ py: 3 }}>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />

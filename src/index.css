@@ -1,27 +1,37 @@
+/* ---- Design tokens ---- */
 :root{
   --bg:#101214;          /* page */
   --paper:#1A1D21;       /* cards */
   --text:#EAEAEA;        /* text */
   --accent:#d32f2f;      /* red */
 }
-body{ background:var(--bg); color:var(--text); }
-.card{
-  background:rgba(255,255,255,0.05);
-  border:1px solid rgba(255,255,255,0.10);
-  border-radius:1rem;
-}
 
-
+/* ---- Base ---- */
+html, body, #root { height: 100%; }
+body { margin: 0; background: var(--bg); color: var(--text); }
 a { color: inherit; text-decoration: none; }
-.container { max-width: 1000px; margin: 0 auto; padding: 1rem; }
 
-.grid { display: grid; gap: 1rem; }
-.grid-3 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+/* Media defaults to avoid baseline gaps / layout wobble */
+img, video { display: block; max-width: 100%; height: auto; }
 
-.card {
+/* Keep this if you still use className="container" on page shells */
+.container { max-width: 1280px; margin: 0 auto; padding: 1rem; }
+
+/* ---- Card look for legacy places using className="card" ---- */
+/* Single, consolidated rule (removed duplicate) */
+.card{
   background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.10);
   border-radius: 1rem;
   padding: 1rem;
   backdrop-filter: blur(3px);
+}
+
+/* ---- Neutralize old layout helpers that conflict with MUI ---- */
+/* If any page still has className="grid grid-3", these would override MUI’s layout.
+   We disable them so your new MUI/CSS Grid in Services.jsx is authoritative. */
+.grid, .grid-3 {
+  display: initial !important;
+  grid-template-columns: initial !important;
+  gap: initial !important;
 }

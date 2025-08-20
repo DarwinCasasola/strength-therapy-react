@@ -59,7 +59,7 @@ export default function Contact() {
           "Something went wrong sending your message. Please try again.";
         setSnack({ open: true, type: "error", msg });
       }
-    } catch (err) {
+    } catch {
       setSnack({
         open: true,
         type: "error",
@@ -197,6 +197,10 @@ export default function Contact() {
             >
               {loading ? "Sending..." : "Send Message"}
             </Button>
+            <Box role="status" aria-live="polite" sx={{ mt: 2, minHeight: 24 }}>
+  {status==="success" && <Typography>Thanks! I’ll get back to you soon.</Typography>}
+  {status==="error"   && <Typography>Hmm—couldn’t send. Please try again.</Typography>}
+</Box>
           </Paper>
         </Grid>
       </Grid>

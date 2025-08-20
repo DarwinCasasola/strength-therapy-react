@@ -11,6 +11,7 @@ import Services from "./pages/Services.jsx";
 import Contact from "./pages/Contact.jsx";
 import Booking from "./pages/Booking.jsx";
 import { BookingProvider } from "./context/BookingContext.jsx";
+import NotFound from "./pages/NotFound.jsx";
 
 const theme = createTheme({
   palette: {
@@ -57,6 +58,7 @@ export default function App() {
             <Route path="/services" element={<Services />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/booking" element={<Booking />} />
+            <Route path='*' element={<NotFound />} /> {/* catch-all for 404 */}
           </Routes>
         </Container>
         <Footer />

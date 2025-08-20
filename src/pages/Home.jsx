@@ -2,6 +2,7 @@
 import { useEffect } from "react";
 import { Box, Container, Typography, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import Tips from "../components/Tips";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -96,6 +97,11 @@ export default function Home() {
           sx={{ mt: 4 }}
         />
       </Container>
+
+      <Container sx={{ py: 8 }}>
+  <Typography variant="h4" align="center" gutterBottom>Training Tips</Typography>
+  <Tips />
+</Container>
     </>
   );
 }

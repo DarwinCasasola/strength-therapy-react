@@ -96,12 +96,13 @@ export default function Home() {
           data-elfsight-app-lazy
           sx={{ mt: 4 }}
         />
-      </Container>
-
-      <Container sx={{ py: 8 }}>
-  <Typography variant="h4" align="center" gutterBottom>Training Tips</Typography>
-  <Tips />
-</Container>
-    </>
+    <Container sx={{ py: 8 }}>
+      <Typography variant="h4" align="center" gutterBottom>
+        Training Tips
+      </Typography>
+      <Tips limit={6} />   {/* show first 3 tips from /tips.json */}
+    </Container>
+  </Container>
+  </>
   );
 }

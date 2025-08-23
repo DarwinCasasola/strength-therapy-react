@@ -16,7 +16,7 @@ export default function Tips({ limit = 3, url = "/tips.json" }) {
         if (!mounted) return;
         setTips(Array.isArray(data) ? data.slice(0, limit) : []);
         setStatus("done");
-      } catch (e) {
+      } catch {
         setStatus("error");
       }
     })();

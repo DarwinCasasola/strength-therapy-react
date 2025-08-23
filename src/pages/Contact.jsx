@@ -12,7 +12,7 @@ import {
   Paper,
 } from "@mui/material";
 
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/myzwbwkr";
+const FORMSPREE_ENDPOINT = "https://formspree.io/f/mwplbzne";
 
 export default function Contact() {
   const [form, setForm] = useState({ email: "", message: "" });

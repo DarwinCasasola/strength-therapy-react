@@ -12,13 +12,18 @@ import {
   Paper,
 } from "@mui/material";
 
-const FORMSPREE_ENDPOINT = "https://formspree.io/f/mwplbzne"; // <-- your live ID
+// Google Apps Script Web App URL (ends with /exec)
+const SCRIPT_URL =
+  "https://script.google.com/macros/s/AKfycbxLaIU9Pa3A5gtQx-auj_YhRHguQ2R4n_Uv2BWPt-UnvYSwgyRwEl26a-ntoSmyydzQqQ/exec";
 
 export default function Contact() {
   const [form, setForm] = useState({ email: "", message: "", name: "", phone: "" });
   const [errors, setErrors] = useState({});
   const [snack, setSnack] = useState({ open: false, type: "success", msg: "" });
   const [loading, setLoading] = useState(false);
+
+  // Honeypot anti-spam field (bots fill hidden inputs)
+  const [hp, setHp] = useState("");
 
   const onChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
 
@@ -34,34 +39,39 @@ export default function Contact() {
     ev.preventDefault();
     if (!validate()) return;
 
+    // If honeypot is filled, silently succeed (thwarts bots)
+    if (hp && hp.trim().length > 0) {
+      setSnack({ open: true, type: "success", msg: "Thanks! Your message has been sent." });
+      setForm({ email: "", message: "", name: "", phone: "" });
+      setErrors({});
+      return;
+    }
+
     try {
       setLoading(true);
 
-      // Build traditional form payload (what Formspree expects)
+      // IMPORTANT: send FormData, no custom headers (avoids CORS preflight)
       const fd = new FormData();
+      fd.append("name", form.name || "");
       fd.append("email", form.email);
+      fd.append("phone", form.phone || "");
       fd.append("message", form.message);
-      if (form.name) fd.append("name", form.name);
-      if (form.phone) fd.append("phone", form.phone);
-      fd.append("_subject", "New contact from Strength Therapy");
-      fd.append("_gotcha", ""); // honeypot: must stay empty
+      fd.append("page", typeof window !== "undefined" ? window.location.pathname : "");
+      // a second, server-ignored honeypot (optional)
+      fd.append("website", "");
 
-      const res = await fetch(FORMSPREE_ENDPOINT, {
-        method: "POST",
-        headers: { Accept: "application/json" },
-        body: fd,
-      });
+      const res = await fetch(SCRIPT_URL, { method: "POST", body: fd });
 
       if (res.ok) {
         setSnack({ open: true, type: "success", msg: "Thanks! Your message has been sent." });
         setForm({ email: "", message: "", name: "", phone: "" });
         setErrors({});
       } else {
-        const data = await res.json().catch(() => ({}));
-        const msg =
-          data?.errors?.[0]?.message ||
-          "Something went wrong sending your message. Please try again.";
-        setSnack({ open: true, type: "error", msg });
+        setSnack({
+          open: true,
+          type: "error",
+          msg: "Something went wrong sending your message. Please try again.",
+        });
       }
     } catch {
       setSnack({
@@ -167,9 +177,26 @@ export default function Contact() {
               borderRadius: 2,
             }}
           >
-            {/* Hidden fields (optional) */}
-            <input type="hidden" name="_gotcha" value="" />
-            <input type="hidden" name="_subject" value="Strength Therapy Lead" />
+            {/* Honeypot (visually hidden, still focus-safe off-screen) */}
+            <input
+              type="text"
+              name="company"
+              value={hp}
+              onChange={(e) => setHp(e.target.value)}
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                left: "-10000px",
+                top: "auto",
+                width: "1px",
+                height: "1px",
+                overflow: "hidden",
+              }}
+            />
+
+            {/* Optional metadata */}
             <input
               type="hidden"
               name="page"
@@ -225,13 +252,7 @@ export default function Contact() {
               required
             />
 
-            <Button
-              type="submit"
-              variant="contained"
-              fullWidth
-              disabled={loading}
-              sx={{ mt: 2 }}
-            >
+            <Button type="submit" variant="contained" fullWidth disabled={loading} sx={{ mt: 2 }}>
               {loading ? "Sending..." : "Send Message"}
             </Button>
 

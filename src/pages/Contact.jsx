@@ -20,7 +20,7 @@ export default function Contact() {
   const [snack, setSnack] = useState({ open: false, type: "success", msg: "" });
   const [loading, setLoading] = useState(false);
 
-  // Honeypot anti-spam field (bots fill hidden inputs)
+  // Honeypot anti-spam field (rename to avoid Chrome autofill)
   const [hp, setHp] = useState("");
 
   const onChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
@@ -48,23 +48,18 @@ export default function Contact() {
     try {
       setLoading(true);
 
-      // IMPORTANT: send FormData, no custom headers (avoids CORS preflight)
       const fd = new FormData();
-      fd.append("formType", "contact"); // lets Apps Script route to contact sheet
+      fd.append("formType", "contact");
       fd.append("name", form.name || "");
       fd.append("email", form.email);
       fd.append("phone", form.phone || "");
       fd.append("message", form.message);
       fd.append("page", typeof window !== "undefined" ? window.location.pathname : "");
 
-      // send honeypot field (must stay empty)
-      fd.append("company", ""); // matches your hidden input name
+      // send a blank honeypot field (your Apps Script checks website/company; blank is safe)
+      fd.append("website", "");
 
-      const res = await fetch(GOOGLE_SHEETS_WEBAPP_URL, {
-        method: "POST",
-        body: fd,
-      });
-
+      const res = await fetch(GOOGLE_SHEETS_WEBAPP_URL, { method: "POST", body: fd });
       const data = await res.json().catch(() => ({}));
 
       if (res.ok && data.ok) {
@@ -92,7 +87,7 @@ export default function Contact() {
       </Typography>
 
       <Grid container spacing={4} alignItems="stretch">
-        {/* Contact Info (left on desktop) */}
+        {/* Contact Info */}
         <Grid item xs={12} md={6} order={{ xs: 2, md: 1 }}>
           <Box sx={{ height: "100%" }}>
             <Typography variant="h6" color="primary" gutterBottom>
@@ -162,7 +157,7 @@ export default function Contact() {
           </Box>
         </Grid>
 
-        {/* Contact Form (right on desktop) */}
+        {/* Contact Form */}
         <Grid item xs={12} md={6} order={{ xs: 1, md: 2 }}>
           <Paper
             component="form"
@@ -179,10 +174,10 @@ export default function Contact() {
               position: "relative",
             }}
           >
-            {/* Honeypot (visually hidden, still focus-safe off-screen) */}
+            {/* Honeypot (renamed to avoid autofill) */}
             <input
               type="text"
-              name="company"
+              name="hp_field"
               value={hp}
               onChange={(e) => setHp(e.target.value)}
               tabIndex={-1}
@@ -208,7 +203,6 @@ export default function Contact() {
               margin="normal"
               autoComplete="name"
             />
-
             <TextField
               id="contact-phone"
               name="phone"
@@ -219,7 +213,6 @@ export default function Contact() {
               margin="normal"
               autoComplete="tel"
             />
-
             <TextField
               id="contact-email"
               name="email"
@@ -234,7 +227,6 @@ export default function Contact() {
               required
               autoComplete="email"
             />
-
             <TextField
               id="contact-message"
               name="message"
@@ -254,13 +246,13 @@ export default function Contact() {
               {loading ? "Sending..." : "Send Message"}
             </Button>
 
-            {/* a11y live region */}
             <Box role="status" aria-live="polite" sx={{ mt: 2, minHeight: 24 }}>
-              {snack.open && (snack.type === "success"
-                ? <Typography>Thanks! I’ll get back to you soon.</Typography>
-                : snack.type === "error"
-                  ? <Typography>Hmm—couldn’t send. Please try again.</Typography>
-                  : null)}
+              {snack.open &&
+                (snack.type === "success" ? (
+                  <Typography>Thanks! I’ll get back to you soon.</Typography>
+                ) : (
+                  <Typography>Hmm—couldn’t send. Please try again.</Typography>
+                ))}
             </Box>
           </Paper>
         </Grid>

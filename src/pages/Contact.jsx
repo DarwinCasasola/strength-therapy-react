@@ -13,8 +13,7 @@ import {
 } from "@mui/material";
 
 // Google Apps Script Web App URL (ends with /exec)
-const SCRIPT_URL =
-  "https://script.google.com/macros/s/AKfycbxLaIU9Pa3A5gtQx-auj_YhRHguQ2R4n_Uv2BWPt-UnvYSwgyRwEl26a-ntoSmyydzQqQ/exec";
+import { GOOGLE_SHEETS_WEBAPP_URL as SCRIPT_URL } from "../config/googleSheets";
 
 export default function Contact() {
   const [form, setForm] = useState({ email: "", message: "", name: "", phone: "" });

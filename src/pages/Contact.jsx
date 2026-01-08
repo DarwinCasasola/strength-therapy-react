@@ -12,8 +12,7 @@ import {
   Paper,
 } from "@mui/material";
 
-// Google Apps Script Web App URL (ends with /exec)
-import { GOOGLE_SHEETS_WEBAPP_URL as SCRIPT_URL } from "../config/googleSheets";
+import { GOOGLE_SHEETS_WEBAPP_URL } from "../config/googleSheets";
 
 export default function Contact() {
   const [form, setForm] = useState({ email: "", message: "", name: "", phone: "" });
@@ -51,32 +50,35 @@ export default function Contact() {
 
       // IMPORTANT: send FormData, no custom headers (avoids CORS preflight)
       const fd = new FormData();
+      fd.append("formType", "contact"); // lets Apps Script route to contact sheet
       fd.append("name", form.name || "");
       fd.append("email", form.email);
       fd.append("phone", form.phone || "");
       fd.append("message", form.message);
       fd.append("page", typeof window !== "undefined" ? window.location.pathname : "");
-      // a second, server-ignored honeypot (optional)
-      fd.append("website", "");
 
-      const res = await fetch(SCRIPT_URL, { method: "POST", body: fd });
+      // send honeypot field (must stay empty)
+      fd.append("company", ""); // matches your hidden input name
 
-      if (res.ok) {
+      const res = await fetch(GOOGLE_SHEETS_WEBAPP_URL, {
+        method: "POST",
+        body: fd,
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && data.ok) {
         setSnack({ open: true, type: "success", msg: "Thanks! Your message has been sent." });
         setForm({ email: "", message: "", name: "", phone: "" });
         setErrors({});
       } else {
-        setSnack({
-          open: true,
-          type: "error",
-          msg: "Something went wrong sending your message. Please try again.",
-        });
+        throw new Error(data.error || "Something went wrong sending your message. Please try again.");
       }
-    } catch {
+    } catch (err) {
       setSnack({
         open: true,
         type: "error",
-        msg: "Network error. Please check your connection and try again.",
+        msg: err?.message || "Network error. Please check your connection and try again.",
       });
     } finally {
       setLoading(false);
@@ -174,6 +176,7 @@ export default function Contact() {
               background: "rgba(255,255,255,0.05)",
               borderLeftWidth: 4,
               borderRadius: 2,
+              position: "relative",
             }}
           >
             {/* Honeypot (visually hidden, still focus-safe off-screen) */}
@@ -195,13 +198,6 @@ export default function Contact() {
               }}
             />
 
-            {/* Optional metadata */}
-            <input
-              type="hidden"
-              name="page"
-              value={typeof window !== "undefined" ? window.location.pathname : ""}
-            />
-
             <TextField
               id="contact-name"
               name="name"
@@ -212,6 +208,7 @@ export default function Contact() {
               margin="normal"
               autoComplete="name"
             />
+
             <TextField
               id="contact-phone"
               name="phone"
@@ -222,6 +219,7 @@ export default function Contact() {
               margin="normal"
               autoComplete="tel"
             />
+
             <TextField
               id="contact-email"
               name="email"
@@ -236,6 +234,7 @@ export default function Contact() {
               required
               autoComplete="email"
             />
+
             <TextField
               id="contact-message"
               name="message"

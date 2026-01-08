@@ -1,16 +1,28 @@
 // src/pages/Booking.jsx
-import { Box, TextField, MenuItem, Button, Typography, Snackbar, Alert } from "@mui/material";
+import {
+  Box,
+  TextField,
+  MenuItem,
+  Button,
+  Typography,
+  Snackbar,
+  Alert,
+} from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import services from "../data/services.json";
 import { useBooking } from "../context/BookingContext.jsx";
+import { GOOGLE_SHEETS_WEBAPP_URL } from "../config/googleSheets";
 
 export default function Booking() {
   const { state } = useLocation();
   const navigate = useNavigate();
   const { booking, updateBooking, resetBooking } = useBooking();
+
   const [errors, setErrors] = useState({});
-  const [open, setOpen] = useState(false);
+  const [openSuccess, setOpenSuccess] = useState(false);
+  const [openError, setOpenError] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
     if (state?.presetService) updateBooking({ service: state.presetService });
@@ -20,27 +32,59 @@ export default function Booking() {
   const validate = () => {
     const e = {};
     if (booking.name.trim().length < 2) e.name = "Please enter your full name.";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(booking.email)) e.email = "Enter a valid email.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(booking.email))
+      e.email = "Enter a valid email.";
     if (!booking.service) e.service = "Select a service.";
     if (!booking.date) e.date = "Choose a date.";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
 
-  const onSubmit = (ev) => {
+  const onSubmit = async (ev) => {
     ev.preventDefault();
     if (!validate()) return;
-    // TODO: POST to your backend later
-    setOpen(true);
-    setTimeout(() => {
-      resetBooking();
-      navigate("/");
-    }, 1200);
+
+    try {
+      const fd = new FormData();
+      fd.append("formType", "booking"); // routes to Bookings tab
+      fd.append("name", booking.name);
+      fd.append("email", booking.email);
+      fd.append("service", booking.service);
+      fd.append("date", booking.date);
+      fd.append("notes", booking.notes || "");
+      fd.append("page", "booking");
+
+      // honeypot (must stay empty)
+      fd.append("website", "");
+
+      const res = await fetch(GOOGLE_SHEETS_WEBAPP_URL, {
+        method: "POST",
+        body: fd,
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && data.ok) {
+        setOpenSuccess(true);
+        setTimeout(() => {
+          resetBooking();
+          navigate("/");
+        }, 1200);
+      } else {
+        throw new Error(data.error || "Booking submission failed.");
+      }
+    } catch (err) {
+      setErrorMsg(err.message || "Something went wrong.");
+      setOpenError(true);
+    }
   };
 
   return (
     <Box className="container">
-      <Typography variant="h4" gutterBottom>Book a Session</Typography>
+      <Typography variant="h4" gutterBottom>
+        Book a Session
+      </Typography>
+
       <form onSubmit={onSubmit} className="card">
         <TextField
           label="Full Name"
@@ -52,6 +96,7 @@ export default function Booking() {
           margin="normal"
           required
         />
+
         <TextField
           type="email"
           label="Email"
@@ -63,6 +108,7 @@ export default function Booking() {
           margin="normal"
           required
         />
+
         <TextField
           select
           label="Service"
@@ -75,9 +121,12 @@ export default function Booking() {
           required
         >
           {services.map((s) => (
-            <MenuItem key={s.title} value={s.title}>{s.title}</MenuItem>
+            <MenuItem key={s.title} value={s.title}>
+              {s.title}
+            </MenuItem>
           ))}
         </TextField>
+
         <TextField
           type="date"
           label="Preferred Date"
@@ -90,6 +139,7 @@ export default function Booking() {
           InputLabelProps={{ shrink: true }}
           required
         />
+
         <TextField
           multiline
           rows={3}
@@ -99,11 +149,32 @@ export default function Booking() {
           fullWidth
           margin="normal"
         />
-        <Button type="submit" variant="contained">Confirm Booking</Button>
+
+        <Button type="submit" variant="contained">
+          Confirm Booking
+        </Button>
       </form>
 
-      <Snackbar open={open} autoHideDuration={2000} onClose={() => setOpen(false)}>
-        <Alert severity="success" onClose={() => setOpen(false)}>Booking received!</Alert>
+      {/* Success Snackbar */}
+      <Snackbar
+        open={openSuccess}
+        autoHideDuration={2000}
+        onClose={() => setOpenSuccess(false)}
+      >
+        <Alert severity="success" onClose={() => setOpenSuccess(false)}>
+          Booking received!
+        </Alert>
+      </Snackbar>
+
+      {/* Error Snackbar */}
+      <Snackbar
+        open={openError}
+        autoHideDuration={4000}
+        onClose={() => setOpenError(false)}
+      >
+        <Alert severity="error" onClose={() => setOpenError(false)}>
+          {errorMsg}
+        </Alert>
       </Snackbar>
     </Box>
   );

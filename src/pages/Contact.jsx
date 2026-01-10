@@ -2,33 +2,50 @@
 import { useState } from "react";
 import {
   Box,
-  Grid,
   TextField,
+  MenuItem,
   Button,
   Typography,
   Snackbar,
   Alert,
+  Grid,
   Link,
   Paper,
 } from "@mui/material";
 
+import services from "../data/services.json";
 import { GOOGLE_SHEETS_WEBAPP_URL } from "../config/googleSheets";
 
 export default function Contact() {
-  const [form, setForm] = useState({ email: "", message: "", name: "", phone: "" });
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    service: "",
+    date: "",
+    notes: "",
+  });
+
   const [errors, setErrors] = useState({});
-  const [snack, setSnack] = useState({ open: false, type: "success", msg: "" });
+  const [openSuccess, setOpenSuccess] = useState(false);
+  const [openError, setOpenError] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Honeypot anti-spam field (rename to avoid Chrome autofill)
+  // Honeypot anti-spam field (renamed to avoid autofill)
   const [hp, setHp] = useState("");
 
-  const onChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
+  const onChange = (e) =>
+    setForm((f) => ({
+      ...f,
+      [e.target.name]: e.target.value,
+    }));
 
   const validate = () => {
     const e = {};
+    if (form.name.trim().length < 2) e.name = "Please enter your full name.";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Enter a valid email.";
-    if (form.message.trim().length < 10) e.message = "Message should be at least 10 characters.";
+    if (!form.service) e.service = "Select a service.";
+    if (!form.date) e.date = "Choose a date.";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -37,10 +54,10 @@ export default function Contact() {
     ev.preventDefault();
     if (!validate()) return;
 
-    // If honeypot is filled, silently succeed (thwarts bots)
+    // If honeypot is filled, silently stop (thwarts bots)
     if (hp && hp.trim().length > 0) {
-      setSnack({ open: true, type: "success", msg: "Thanks! Your message has been sent." });
-      setForm({ email: "", message: "", name: "", phone: "" });
+      setOpenSuccess(true);
+      setForm({ name: "", email: "", service: "", date: "", notes: "" });
       setErrors({});
       return;
     }
@@ -50,31 +67,33 @@ export default function Contact() {
 
       const fd = new FormData();
       fd.append("formType", "contact");
-      fd.append("name", form.name || "");
+      fd.append("name", form.name);
       fd.append("email", form.email);
-      fd.append("phone", form.phone || "");
-      fd.append("message", form.message);
-      fd.append("page", typeof window !== "undefined" ? window.location.pathname : "");
+      fd.append("service", form.service);
+      fd.append("date", form.date);
+      fd.append("notes", form.notes || "");
+      fd.append("page", "contact");
 
-      // send a blank honeypot field (your Apps Script checks website/company; blank is safe)
+      // keep blank — Apps Script honeypot check should ignore if empty
       fd.append("website", "");
 
-      const res = await fetch(GOOGLE_SHEETS_WEBAPP_URL, { method: "POST", body: fd });
+      const res = await fetch(GOOGLE_SHEETS_WEBAPP_URL, {
+        method: "POST",
+        body: fd,
+      });
+
       const data = await res.json().catch(() => ({}));
 
       if (res.ok && data.ok) {
-        setSnack({ open: true, type: "success", msg: "Thanks! Your message has been sent." });
-        setForm({ email: "", message: "", name: "", phone: "" });
+        setOpenSuccess(true);
+        setForm({ name: "", email: "", service: "", date: "", notes: "" });
         setErrors({});
       } else {
-        throw new Error(data.error || "Something went wrong sending your message. Please try again.");
+        throw new Error(data.error || "Contact submission failed.");
       }
     } catch (err) {
-      setSnack({
-        open: true,
-        type: "error",
-        msg: err?.message || "Network error. Please check your connection and try again.",
-      });
+      setErrorMsg(err?.message || "Something went wrong.");
+      setOpenError(true);
     } finally {
       setLoading(false);
     }
@@ -87,7 +106,7 @@ export default function Contact() {
       </Typography>
 
       <Grid container spacing={4} alignItems="stretch">
-        {/* Contact Info */}
+        {/* Contact Info (left on desktop) */}
         <Grid item xs={12} md={6} order={{ xs: 2, md: 1 }}>
           <Box sx={{ height: "100%" }}>
             <Typography variant="h6" color="primary" gutterBottom>
@@ -157,7 +176,7 @@ export default function Contact() {
           </Box>
         </Grid>
 
-        {/* Contact Form */}
+        {/* Booking-style Contact Form (right on desktop) */}
         <Grid item xs={12} md={6} order={{ xs: 1, md: 2 }}>
           <Paper
             component="form"
@@ -194,30 +213,22 @@ export default function Contact() {
             />
 
             <TextField
-              id="contact-name"
+              label="Full Name"
               name="name"
-              label="Name (optional)"
               value={form.name}
               onChange={onChange}
+              error={!!errors.name}
+              helperText={errors.name}
               fullWidth
               margin="normal"
+              required
               autoComplete="name"
             />
+
             <TextField
-              id="contact-phone"
-              name="phone"
-              label="Phone (optional)"
-              value={form.phone}
-              onChange={onChange}
-              fullWidth
-              margin="normal"
-              autoComplete="tel"
-            />
-            <TextField
-              id="contact-email"
-              name="email"
-              label="Your Email"
               type="email"
+              label="Email"
+              name="email"
               value={form.email}
               onChange={onChange}
               error={!!errors.email}
@@ -227,48 +238,76 @@ export default function Contact() {
               required
               autoComplete="email"
             />
+
             <TextField
-              id="contact-message"
-              name="message"
-              label="Your Message"
-              value={form.message}
+              select
+              label="Service"
+              name="service"
+              value={form.service}
               onChange={onChange}
-              error={!!errors.message}
-              helperText={errors.message}
+              error={!!errors.service}
+              helperText={errors.service}
               fullWidth
               margin="normal"
-              multiline
-              rows={5}
+              required
+            >
+              {services.map((s) => (
+                <MenuItem key={s.title} value={s.title}>
+                  {s.title}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            <TextField
+              type="date"
+              label="Preferred Date"
+              name="date"
+              value={form.date}
+              onChange={onChange}
+              error={!!errors.date}
+              helperText={errors.date}
+              fullWidth
+              margin="normal"
+              InputLabelProps={{ shrink: true }}
               required
             />
 
-            <Button type="submit" variant="contained" fullWidth disabled={loading} sx={{ mt: 2 }}>
-              {loading ? "Sending..." : "Send Message"}
-            </Button>
+            <TextField
+              multiline
+              rows={3}
+              label="Notes"
+              name="notes"
+              value={form.notes}
+              onChange={onChange}
+              fullWidth
+              margin="normal"
+              placeholder="Any details you'd like Cory to know?"
+            />
 
-            <Box role="status" aria-live="polite" sx={{ mt: 2, minHeight: 24 }}>
-              {snack.open &&
-                (snack.type === "success" ? (
-                  <Typography>Thanks! I’ll get back to you soon.</Typography>
-                ) : (
-                  <Typography>Hmm—couldn’t send. Please try again.</Typography>
-                ))}
-            </Box>
+            <Button
+              type="submit"
+              variant="contained"
+              fullWidth
+              disabled={loading}
+              sx={{ mt: 2 }}
+            >
+              {loading ? "Sending..." : "Send"}
+            </Button>
           </Paper>
         </Grid>
       </Grid>
 
-      <Snackbar
-        open={snack.open}
-        autoHideDuration={3000}
-        onClose={() => setSnack((s) => ({ ...s, open: false }))}
-      >
-        <Alert
-          onClose={() => setSnack((s) => ({ ...s, open: false }))}
-          severity={snack.type}
-          sx={{ width: "100%" }}
-        >
-          {snack.msg}
+      {/* Success */}
+      <Snackbar open={openSuccess} autoHideDuration={2500} onClose={() => setOpenSuccess(false)}>
+        <Alert severity="success" onClose={() => setOpenSuccess(false)}>
+          Message received!
+        </Alert>
+      </Snackbar>
+
+      {/* Error */}
+      <Snackbar open={openError} autoHideDuration={4000} onClose={() => setOpenError(false)}>
+        <Alert severity="error" onClose={() => setOpenError(false)}>
+          {errorMsg}
         </Alert>
       </Snackbar>
     </Box>

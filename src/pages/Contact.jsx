@@ -50,17 +50,20 @@ export default function Contact() {
 
   const onSubmit = async (ev) => {
     ev.preventDefault();
+
+    // ✅ capture the form element immediately (fixes currentTarget becoming null)
+    const formEl = ev.currentTarget;
+
     if (!validate()) return;
 
     try {
       setLoading(true);
 
-      // ✅ CRITICAL: pull data directly from the form DOM
-      const fd = new FormData(ev.currentTarget);
+      const fd = new FormData(formEl); // ✅ use saved form element
       fd.append("formType", "contact");
       fd.append("page", "contact");
 
-      // Explicit blank honeypots (Apps Script checks these)
+      // Blank honeypots (Apps Script checks these)
       fd.append("website", "");
       fd.append("company", "");
 
@@ -82,7 +85,11 @@ export default function Contact() {
           notes: "",
         });
         setErrors({});
-        ev.currentTarget.reset();
+
+        // ✅ safe reset
+        if (formEl && typeof formEl.reset === "function") {
+          formEl.reset();
+        }
       } else {
         throw new Error(data.error || "Contact submission failed.");
       }
@@ -144,7 +151,7 @@ export default function Contact() {
               position: "relative",
             }}
           >
-            {/* 🔒 DOM-only honeypot (React NEVER reads this) */}
+            {/* 🔒 DOM-only honeypot (React never reads this) */}
             <input
               type="text"
               name="contact_hp_field_xyz"
@@ -232,13 +239,7 @@ export default function Contact() {
               placeholder="Any details you'd like Cory to know?"
             />
 
-            <Button
-              type="submit"
-              variant="contained"
-              fullWidth
-              disabled={loading}
-              sx={{ mt: 2 }}
-            >
+            <Button type="submit" variant="contained" fullWidth disabled={loading} sx={{ mt: 2 }}>
               {loading ? "Sending..." : "Send"}
             </Button>
           </Paper>

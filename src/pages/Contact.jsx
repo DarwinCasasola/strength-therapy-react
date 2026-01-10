@@ -31,9 +31,6 @@ export default function Contact() {
   const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Honeypot (rename so Chrome autofill won’t touch it)
-  const [hp, setHp] = useState("");
-
   const onChange = (e) =>
     setForm((f) => ({
       ...f,
@@ -43,7 +40,8 @@ export default function Contact() {
   const validate = () => {
     const e = {};
     if (form.name.trim().length < 2) e.name = "Please enter your full name.";
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Enter a valid email.";
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+      e.email = "Enter a valid email.";
     if (!form.service) e.service = "Select a service.";
     if (!form.date) e.date = "Choose a date.";
     setErrors(e);
@@ -52,37 +50,19 @@ export default function Contact() {
 
   const onSubmit = async (ev) => {
     ev.preventDefault();
-
-    console.log("CONTACT SUBMIT fired", { form, hp });
-
-    if (!validate()) {
-      console.log("CONTACT SUBMIT stopped: validation failed");
-      return;
-    }
-
-    // If honeypot is filled, stop. (No fake success.)
-    if (hp && hp.trim().length > 0) {
-      console.log("CONTACT SUBMIT stopped: honeypot triggered", hp);
-      return;
-    }
+    if (!validate()) return;
 
     try {
       setLoading(true);
 
-      const fd = new FormData();
+      // ✅ CRITICAL: pull data directly from the form DOM
+      const fd = new FormData(ev.currentTarget);
       fd.append("formType", "contact");
-      fd.append("name", form.name);
-      fd.append("email", form.email);
-      fd.append("service", form.service);
-      fd.append("date", form.date);
-      fd.append("notes", form.notes || "");
       fd.append("page", "contact");
 
-      // honeypot fields the script checks — must be blank
+      // Explicit blank honeypots (Apps Script checks these)
       fd.append("website", "");
       fd.append("company", "");
-
-      console.log("CONTACT posting to:", GOOGLE_SHEETS_WEBAPP_URL);
 
       const res = await fetch(GOOGLE_SHEETS_WEBAPP_URL, {
         method: "POST",
@@ -92,17 +72,21 @@ export default function Contact() {
 
       const data = await res.json().catch(() => ({}));
 
-      console.log("CONTACT response:", { status: res.status, data });
-
       if (res.ok && data.ok) {
         setOpenSuccess(true);
-        setForm({ name: "", email: "", service: "", date: "", notes: "" });
+        setForm({
+          name: "",
+          email: "",
+          service: "",
+          date: "",
+          notes: "",
+        });
         setErrors({});
+        ev.currentTarget.reset();
       } else {
         throw new Error(data.error || "Contact submission failed.");
       }
     } catch (err) {
-      console.error("CONTACT submit error:", err);
       setErrorMsg(err?.message || "Something went wrong.");
       setOpenError(true);
     } finally {
@@ -160,22 +144,19 @@ export default function Contact() {
               position: "relative",
             }}
           >
-            {/* Honeypot */}
+            {/* 🔒 DOM-only honeypot (React NEVER reads this) */}
             <input
               type="text"
-              name="hp_field"
-              value={hp}
-              onChange={(e) => setHp(e.target.value)}
+              name="contact_hp_field_xyz"
               tabIndex={-1}
               autoComplete="off"
               aria-hidden="true"
               style={{
                 position: "absolute",
-                left: "-10000px",
-                top: "auto",
+                left: "-9999px",
                 width: "1px",
                 height: "1px",
-                overflow: "hidden",
+                opacity: 0,
               }}
             />
 
@@ -251,7 +232,13 @@ export default function Contact() {
               placeholder="Any details you'd like Cory to know?"
             />
 
-            <Button type="submit" variant="contained" fullWidth disabled={loading} sx={{ mt: 2 }}>
+            <Button
+              type="submit"
+              variant="contained"
+              fullWidth
+              disabled={loading}
+              sx={{ mt: 2 }}
+            >
               {loading ? "Sending..." : "Send"}
             </Button>
           </Paper>

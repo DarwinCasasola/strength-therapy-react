@@ -31,7 +31,7 @@ export default function Contact() {
   const [errorMsg, setErrorMsg] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Honeypot anti-spam field (renamed to avoid autofill)
+  // Honeypot (rename so Chrome autofill won’t touch it)
   const [hp, setHp] = useState("");
 
   const onChange = (e) =>
@@ -52,13 +52,17 @@ export default function Contact() {
 
   const onSubmit = async (ev) => {
     ev.preventDefault();
-    if (!validate()) return;
 
-    // If honeypot is filled, silently stop (thwarts bots)
+    console.log("CONTACT SUBMIT fired", { form, hp });
+
+    if (!validate()) {
+      console.log("CONTACT SUBMIT stopped: validation failed");
+      return;
+    }
+
+    // If honeypot is filled, stop. (No fake success.)
     if (hp && hp.trim().length > 0) {
-      setOpenSuccess(true);
-      setForm({ name: "", email: "", service: "", date: "", notes: "" });
-      setErrors({});
+      console.log("CONTACT SUBMIT stopped: honeypot triggered", hp);
       return;
     }
 
@@ -74,15 +78,21 @@ export default function Contact() {
       fd.append("notes", form.notes || "");
       fd.append("page", "contact");
 
-      // keep blank — Apps Script honeypot check should ignore if empty
+      // honeypot fields the script checks — must be blank
       fd.append("website", "");
+      fd.append("company", "");
+
+      console.log("CONTACT posting to:", GOOGLE_SHEETS_WEBAPP_URL);
 
       const res = await fetch(GOOGLE_SHEETS_WEBAPP_URL, {
         method: "POST",
         body: fd,
+        redirect: "follow",
       });
 
       const data = await res.json().catch(() => ({}));
+
+      console.log("CONTACT response:", { status: res.status, data });
 
       if (res.ok && data.ok) {
         setOpenSuccess(true);
@@ -92,6 +102,7 @@ export default function Contact() {
         throw new Error(data.error || "Contact submission failed.");
       }
     } catch (err) {
+      console.error("CONTACT submit error:", err);
       setErrorMsg(err?.message || "Something went wrong.");
       setOpenError(true);
     } finally {
@@ -106,7 +117,7 @@ export default function Contact() {
       </Typography>
 
       <Grid container spacing={4} alignItems="stretch">
-        {/* Contact Info (left on desktop) */}
+        {/* Contact Info */}
         <Grid item xs={12} md={6} order={{ xs: 2, md: 1 }}>
           <Box sx={{ height: "100%" }}>
             <Typography variant="h6" color="primary" gutterBottom>
@@ -129,54 +140,10 @@ export default function Contact() {
                 (702) 290-7804
               </Link>
             </Typography>
-
-            <Box sx={{ mt: 3 }}>
-              <Typography variant="subtitle1" color="primary" gutterBottom>
-                Follow Us
-              </Typography>
-              <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-                <Link
-                  href="https://www.instagram.com/strengththerapypt/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  color="inherit"
-                  underline="hover"
-                >
-                  Instagram
-                </Link>
-                <Link
-                  href="https://www.linkedin.com/in/corygintherdpt/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  color="inherit"
-                  underline="hover"
-                >
-                  LinkedIn
-                </Link>
-                <Link
-                  href="https://www.mytpi.com/experts/508334"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  color="inherit"
-                  underline="hover"
-                >
-                  MyTPI
-                </Link>
-                <Link
-                  href="https://www.tiktok.com/@corystrengthpt"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  color="inherit"
-                  underline="hover"
-                >
-                  TikTok
-                </Link>
-              </Box>
-            </Box>
           </Box>
         </Grid>
 
-        {/* Booking-style Contact Form (right on desktop) */}
+        {/* Booking-style Contact Form */}
         <Grid item xs={12} md={6} order={{ xs: 1, md: 2 }}>
           <Paper
             component="form"
@@ -193,7 +160,7 @@ export default function Contact() {
               position: "relative",
             }}
           >
-            {/* Honeypot (renamed to avoid autofill) */}
+            {/* Honeypot */}
             <input
               type="text"
               name="hp_field"
@@ -284,13 +251,7 @@ export default function Contact() {
               placeholder="Any details you'd like Cory to know?"
             />
 
-            <Button
-              type="submit"
-              variant="contained"
-              fullWidth
-              disabled={loading}
-              sx={{ mt: 2 }}
-            >
+            <Button type="submit" variant="contained" fullWidth disabled={loading} sx={{ mt: 2 }}>
               {loading ? "Sending..." : "Send"}
             </Button>
           </Paper>

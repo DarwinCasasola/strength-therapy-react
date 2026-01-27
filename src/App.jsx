@@ -1,7 +1,11 @@
-
 // src/App.jsx
 import { Routes, Route } from "react-router-dom";
-import { ThemeProvider, CssBaseline, createTheme, Container } from "@mui/material";
+import {
+  ThemeProvider,
+  CssBaseline,
+  createTheme,
+  Container,
+} from "@mui/material";
 
 import Navbar from "./components/Navbar.jsx";
 import Footer from "./components/Footer.jsx";
@@ -20,7 +24,7 @@ const theme = createTheme({
     primary: { main: "#d32f2f" }, // red accents
     background: {
       default: "#101214", // near-black page bg
-      paper: "#1A1D21",   // charcoal card bg
+      paper: "#1A1D21", // charcoal card bg
     },
     text: {
       primary: "#EAEAEA",
@@ -52,14 +56,14 @@ export default function App() {
       <CssBaseline />
       <BookingProvider>
         <Navbar />
-        <Container maxWidth='xl' sx={{ py: 3 }}>
+        <Container maxWidth="xl" sx={{ py: 3, px: { xs: 2, sm: 3 } }}>
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/services" element={<Services />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/booking" element={<Booking />} />
-            <Route path='*' element={<NotFound />} /> {/* catch-all for 404 */}
+            <Route path="*" element={<NotFound />} /> {/* catch-all for 404 */}
           </Routes>
         </Container>
         <Footer />

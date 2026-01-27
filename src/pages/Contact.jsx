@@ -107,7 +107,7 @@ export default function Contact() {
         Get in Touch
       </Typography>
 
-      <Grid container spacing={4} alignItems="stretch">
+      <Grid container spacing={{ xs: 2, md: 4 }} alignItems="stretch">
         {/* Contact Info */}
         <Grid item xs={12} md={6} order={{ xs: 2, md: 1 }}>
           <Box sx={{ height: "100%" }}>
@@ -116,12 +116,16 @@ export default function Contact() {
             </Typography>
 
             <Typography paragraph>
-              <strong>Address:</strong> Located inside D1 Fitness, 1300 W. Sunset Rd Suite 1920,
-              Henderson, NV 89014
+              <strong>Address:</strong> Located inside D1 Fitness, 1300 W.
+              Sunset Rd Suite 1920, Henderson, NV 89014
             </Typography>
             <Typography paragraph>
               <strong>Email:</strong>{" "}
-              <Link href="mailto:cory@strengththerapy.info" color="inherit" underline="hover">
+              <Link
+                href="mailto:cory@strengththerapy.info"
+                color="inherit"
+                underline="hover"
+              >
                 cory@strengththerapy.info
               </Link>
             </Typography>
@@ -239,7 +243,13 @@ export default function Contact() {
               placeholder="Any details you'd like Cory to know?"
             />
 
-            <Button type="submit" variant="contained" fullWidth disabled={loading} sx={{ mt: 2 }}>
+            <Button
+              type="submit"
+              variant="contained"
+              fullWidth
+              disabled={loading}
+              sx={{ mt: 2 }}
+            >
               {loading ? "Sending..." : "Send"}
             </Button>
           </Paper>
@@ -247,14 +257,22 @@ export default function Contact() {
       </Grid>
 
       {/* Success */}
-      <Snackbar open={openSuccess} autoHideDuration={2500} onClose={() => setOpenSuccess(false)}>
+      <Snackbar
+        open={openSuccess}
+        autoHideDuration={2500}
+        onClose={() => setOpenSuccess(false)}
+      >
         <Alert severity="success" onClose={() => setOpenSuccess(false)}>
           Message received!
         </Alert>
       </Snackbar>
 
       {/* Error */}
-      <Snackbar open={openError} autoHideDuration={4000} onClose={() => setOpenError(false)}>
+      <Snackbar
+        open={openError}
+        autoHideDuration={4000}
+        onClose={() => setOpenError(false)}
+      >
         <Alert severity="error" onClose={() => setOpenError(false)}>
           {errorMsg}
         </Alert>

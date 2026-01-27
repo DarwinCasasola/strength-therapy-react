@@ -1,5 +1,19 @@
 // src/components/Navbar.jsx
-import { AppBar, Toolbar, Button, Box } from "@mui/material";
+import { useState } from "react";
+import {
+  AppBar,
+  Toolbar,
+  Button,
+  Box,
+  IconButton,
+  Drawer,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+} from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import CloseIcon from "@mui/icons-material/Close";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 
 const linkSx = ({ isActive }) => ({
@@ -14,6 +28,23 @@ const linkSx = ({ isActive }) => ({
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const handleDrawerToggle = () => {
+    setMobileOpen(!mobileOpen);
+  };
+
+  const navItems = [
+    { label: "Home", path: "/", end: true },
+    { label: "About", path: "/about" },
+    { label: "Services", path: "/services" },
+    { label: "Contact", path: "/contact" },
+  ];
+
+  const handleNavClick = (path) => {
+    setMobileOpen(false);
+    navigate(path);
+  };
 
   return (
     <AppBar
@@ -21,9 +52,9 @@ export default function Navbar() {
       color="transparent"
       elevation={0}
       sx={{
-        backgroundColor: "#000",                // solid black bar
+        backgroundColor: "#000",
         borderBottom: "1px solid",
-        borderColor: "primary.main",            // thin red line
+        borderColor: "primary.main",
       }}
     >
       <Toolbar sx={{ gap: 2 }}>
@@ -45,10 +76,10 @@ export default function Navbar() {
             alt="Strength Therapy logo"
             loading="eager"
             sx={{
-              height: { xs: 36, sm: 44 },       // adjust logo size here
+              height: { xs: 36, sm: 44 },
               width: "auto",
               display: "block",
-              borderRadius: 1,                  // remove if you want sharp corners
+              borderRadius: 1,
             }}
           />
           {/* Hide text on very small screens to keep the bar clean */}
@@ -66,25 +97,95 @@ export default function Navbar() {
 
         <Box sx={{ flexGrow: 1 }} />
 
-        {/* Nav links + CTA */}
-        <Box sx={{ display: "flex", alignItems: "center" }}>
-          <Box component={NavLink} to="/" end sx={linkSx}>
-            Home
-          </Box>
-          <Box component={NavLink} to="/about" sx={linkSx}>
-            About
-          </Box>
-          <Box component={NavLink} to="/services" sx={linkSx}>
-            Services
-          </Box>
-          <Box component={NavLink} to="/contact" sx={linkSx}>
-            Contact
-          </Box>
-          <Button variant="contained" sx={{ ml: 2 }} onClick={() => navigate("/booking")}>
+        {/* Desktop Navigation */}
+        <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center" }}>
+          {navItems.map((item) => (
+            <Box
+              key={item.path}
+              component={NavLink}
+              to={item.path}
+              end={item.end}
+              sx={linkSx}
+            >
+              {item.label}
+            </Box>
+          ))}
+          <Button
+            variant="contained"
+            sx={{ ml: 2 }}
+            onClick={() => navigate("/booking")}
+          >
             Book Session
           </Button>
         </Box>
+
+        {/* Mobile Hamburger Menu */}
+        <IconButton
+          color="inherit"
+          aria-label="open drawer"
+          edge="end"
+          onClick={handleDrawerToggle}
+          sx={{ display: { xs: "flex", md: "none" } }}
+        >
+          <MenuIcon />
+        </IconButton>
       </Toolbar>
+
+      {/* Mobile Drawer */}
+      <Drawer
+        anchor="right"
+        open={mobileOpen}
+        onClose={handleDrawerToggle}
+        sx={{
+          display: { xs: "block", md: "none" },
+          "& .MuiDrawer-paper": {
+            boxSizing: "border-box",
+            width: 250,
+            backgroundColor: "#1A1D21",
+            borderLeft: "1px solid",
+            borderColor: "primary.main",
+          },
+        }}
+      >
+        <Box sx={{ textAlign: "right", p: 2 }}>
+          <IconButton onClick={handleDrawerToggle} color="inherit">
+            <CloseIcon />
+          </IconButton>
+        </Box>
+        <List>
+          {navItems.map((item) => (
+            <ListItem key={item.path} disablePadding>
+              <ListItemButton
+                onClick={() => handleNavClick(item.path)}
+                sx={{
+                  "&:hover": {
+                    backgroundColor: "rgba(211,47,47,0.1)",
+                  },
+                }}
+              >
+                <ListItemText
+                  primary={item.label}
+                  sx={{
+                    color: "text.primary",
+                    textAlign: "center",
+                  }}
+                />
+              </ListItemButton>
+            </ListItem>
+          ))}
+          <ListItem disablePadding>
+            <Box sx={{ width: "100%", p: 2 }}>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={() => handleNavClick("/booking")}
+              >
+                Book Session
+              </Button>
+            </Box>
+          </ListItem>
+        </List>
+      </Drawer>
     </AppBar>
   );
 }

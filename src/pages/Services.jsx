@@ -5,13 +5,25 @@ import services from "../data/services.json";
 
 export default function Services() {
   const videos = [
-    { src: "/assets/golf-training.MP4",    caption: "Golf Performance Drill",     ratio: "9 / 16" },
-    { src: "/assets/stretching.MP4",       caption: "Strengthening Drill",        ratio: "9 / 16" },
-    { src: "/assets/group-training1.mp4",  caption: "Golf Stretching Drill",      ratio: "9 / 16" },
+    {
+      src: "/assets/golf-training.MP4",
+      caption: "Golf Performance Drill",
+      ratio: "9 / 16",
+    },
+    {
+      src: "/assets/stretching.MP4",
+      caption: "Strengthening Drill",
+      ratio: "9 / 16",
+    },
+    {
+      src: "/assets/group-training1.mp4",
+      caption: "Golf Stretching Drill",
+      ratio: "9 / 16",
+    },
   ];
 
   return (
-    <Box sx={{ mx: "auto", maxWidth: 1280, px: 2, pb: 8 }}>
+    <Box sx={{ mx: "auto", maxWidth: 1280, px: { xs: 2, sm: 3 }, pb: 8 }}>
       <Typography variant="h4" align="center" gutterBottom>
         Our Services
       </Typography>
@@ -19,10 +31,15 @@ export default function Services() {
       {/* FORCE 1/2/3 columns regardless of legacy CSS */}
       <Box
         sx={{
-          mt: 1, mb: 8,
+          mt: 1,
+          mb: 8,
           display: "grid",
-          gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(3, 1fr)" },
-          gap: 4,
+          gridTemplateColumns: {
+            xs: "1fr",
+            sm: "repeat(2, 1fr)",
+            md: "repeat(3, 1fr)",
+          },
+          gap: { xs: 2, sm: 3, md: 4 },
           alignItems: "stretch",
         }}
       >
@@ -42,7 +59,7 @@ export default function Services() {
           mt: 2,
           display: "grid",
           gridTemplateColumns: { xs: "1fr", md: "repeat(2, 1fr)" },
-          gap: 4,
+          gap: { xs: 2, sm: 3, md: 4 },
           alignItems: "stretch",
         }}
       >

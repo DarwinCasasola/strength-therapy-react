@@ -15,6 +15,7 @@ import {
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import { NavLink, Link, useNavigate } from "react-router-dom";
+import InstagramPreview from "./InstagramPreview";
 
 const linkSx = ({ isActive }) => ({
   mx: 1,
@@ -110,6 +111,7 @@ export default function Navbar() {
               {item.label}
             </Box>
           ))}
+          {/* Insert Instagram Preview Component Here */}
           <Button
             variant="contained"
             sx={{ ml: 2 }}

@@ -111,7 +111,7 @@ export default function Navbar() {
               {item.label}
             </Box>
           ))}
-          {/* Insert Instagram Preview Component Here */}
+          <InstagramPreview />
           <Button
             variant="contained"
             sx={{ ml: 2 }}

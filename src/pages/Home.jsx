@@ -88,7 +88,7 @@ export default function Home() {
       {/* Reviews section (Elfsight) */}
       <Container sx={{ py: 8 }}>
         <Typography variant="h4" align="center" gutterBottom>
-          Cupping Therapy, Dry Needling, Personal Training, Sports Performance, and Golf Performance
+          Offering: Cupping Therapy, Dry Needling, Personal Training, Sports Performance, and Golf Performance
         </Typography>
         <Box
           component="div"
